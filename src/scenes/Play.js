@@ -50,6 +50,7 @@ class Play extends Phaser.Scene{
             fixedWidth: 100
         }
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, scoreConfig)
+        this.fireText = this.add.text(borderUISize * 8 + borderPadding * 2, borderUISize + borderPadding*2, '', {fontFamily: 'Courier', fontSize: '28px', backgroundColor: '#F3B141', color: '#843605', align: 'left', padding: {top: 5, bottom: 5}})
 
         this.gameOver = false
 
@@ -78,34 +79,33 @@ class Play extends Phaser.Scene{
         this.ship03.update()
         this.ship04.update()
 
-        let collision = false
-
         if(this.checkCollision(this.p1Rocket, this.ship04)){
             this.p1Rocket.reset()
             this.shipExplode(this.ship04)
-            this.collision = true
         }
 
         if(this.checkCollision(this.p1Rocket, this.ship03)){
             this.p1Rocket.reset()
             this.shipExplode(this.ship03)
-            this.collision = true
         }
 
         if(this.checkCollision(this.p1Rocket, this.ship02)){
             this.p1Rocket.reset()
             this.shipExplode(this.ship02)
-            this.collision = true
         }
 
         if(this.checkCollision(this.p1Rocket, this.ship01)){
             this.p1Rocket.reset()
             this.shipExplode(this.ship01)
-            this.collision = true
         }
 
         if(this.p1Score > highScore){
             highScore = this.p1Score
+        }
+        if (this.p1Rocket.isFiring) {
+            this.fireText.setText('FIRE')
+        } else {
+            this.fireText.setText('')
         }
 
         this.timeLeft = Math.ceil((game.settings.gameTimer - this.clock.getElapsed()) / 1000)
