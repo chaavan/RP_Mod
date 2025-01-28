@@ -13,18 +13,23 @@ class Play extends Phaser.Scene{
     create(){
         // console.log('Play: create')
         // console.log(`HP: ${this.HP} EXP:${this.EXP}`)
+        this.timeBonus = 5
+        this.timePenalty = 3
         this.starfield = this.add.tileSprite(0, 0, 640, 480, 'starfield').setOrigin(0, 0)
 
         this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0x00FF00).setOrigin(0, 0)
-        this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0)
-        this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0)
-        this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0)
-        this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0)
+        this.add.rectangle(0, 0, game.config.width, borderUISize, 0x000000).setOrigin(0, 0)
+        this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0x000000).setOrigin(0, 0)
+        this.add.rectangle(0, 0, borderUISize, game.config.height, 0x000000).setOrigin(0, 0)
+        this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0x000000).setOrigin(0, 0)
 
         this.p1Rocket = new Rocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket')
-        this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0)
-        this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'spaceship', 0, 20).setOrigin(0, 0)
-        this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0, 0)
+        this.ship01 = new Spaceship(this, game.config.width + borderUISize*9, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0)
+        this.ship02 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*5 + borderPadding*2, 'spaceship', 0, 20).setOrigin(0, 0)
+        this.ship03 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*6 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0, 0)
+        this.ship04 = new FastSpaceship(this, game.config.width, borderUISize*7 + borderPadding*6, 'fast_spaceship', 0, 50).setOrigin(0, 0)
+
+        
 
         keyFIRE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F)
         keyRESET = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R)
@@ -57,7 +62,7 @@ class Play extends Phaser.Scene{
 
         this.timeLeft = game.settings.gameTimer / 1000
         this.timeText = this.add.text(game.config.width - 200, 55, `Time: ${this.timeLeft}`, scoreConfig)
-        
+
     }
     update(){
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyRESET)){
@@ -71,27 +76,35 @@ class Play extends Phaser.Scene{
         this.ship01.update()
         this.ship02.update()
         this.ship03.update()
+        this.ship04.update()
+
+        if(this.checkCollision(this.p1Rocket, this.ship04)){
+            this.p1Rocket.reset()
+            this.shipExplode(this.ship04)
+        }
 
         if(this.checkCollision(this.p1Rocket, this.ship03)){
             this.p1Rocket.reset()
             this.shipExplode(this.ship03)
         }
+
         if(this.checkCollision(this.p1Rocket, this.ship02)){
             this.p1Rocket.reset()
             this.shipExplode(this.ship02)
-
         }
+
         if(this.checkCollision(this.p1Rocket, this.ship01)){
             this.p1Rocket.reset()
             this.shipExplode(this.ship01)
-
         }
+
         if(this.p1Score > highScore){
             highScore = this.p1Score
         }
         this.timeLeft = Math.ceil((game.settings.gameTimer - this.clock.getElapsed()) / 1000)
         this.timeText.setText(`Time: ${this.timeLeft}`)
     }
+
     checkCollision(rocket, ship){
         if(rocket.x < ship.x + ship.width &&
             rocket.x + rocket.width > ship.x && 
@@ -120,6 +133,9 @@ class Play extends Phaser.Scene{
         const explosionSounds = ['sfx-explosion1', 'sfx-explosion2', 'sfx-explosion3', 'sfx-explosion4']
         const randomSound = explosionSounds[Math.floor(Math.random() * explosionSounds.length)]
         this.sound.play(randomSound)
+
+        game.settings.gameTimer += this.timeBonus * 1000
+        this.clock.delay = game.settings.gameTimer
     }
 }
 
